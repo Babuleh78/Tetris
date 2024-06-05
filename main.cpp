@@ -26,13 +26,18 @@ class Tetramino {
 
 public:
 	void Update() {
-		int a = max(matrix[0].y, matrix[1].y), b= (matrix[2].y, matrix[3].y);
-		a = max(a, b);
-		if (a != 19) {
-			for (int i = 0; i < 4; i++) {
-				matrix[i] = Vector2Add(matrix[i], y1);
+		if (dvigat) {
+			int a = max(matrix[0].y, matrix[1].y), b = (matrix[2].y, matrix[3].y);
+			a = max(a, b);
+			if (a != 19) {
+				for (int i = 0; i < 4; i++) {
+					matrix[i] = Vector2Add(matrix[i], y1);
+				}
+				y_perem += 1;
 			}
-			y_perem += 1;
+			else {
+				dvigat = false;
+			}
 		}
 	}
 	void Draw() {
@@ -44,13 +49,14 @@ public:
 
 	}
 	void Move(bool flag) { //flag == true вправо иначе влево
-		
-		for (int i = 0; i < 4; i++) {
-			matrix[i] = (flag ? (Vector2Add(matrix[i], x1)) : Vector2Add(matrix[i], Vector2Scale(x1, -1)));
-			
+		if (dvigat) {
+			for (int i = 0; i < 4; i++) {
+				matrix[i] = (flag ? (Vector2Add(matrix[i], x1)) : Vector2Add(matrix[i], Vector2Scale(x1, -1)));
+
+			}
+			if (flag) { x_perem += 1; }
+			else { x_perem -= 1; }
 		}
-		if (flag) { x_perem += 1; }
-		else { x_perem -= 1; }
 	}
 	Vector2 y1 = { 0,1 };
 	Vector2 e = { 1, 1 };
@@ -63,7 +69,7 @@ public:
 	Vector2 matrix1[4];
 	Vector2 matrix2[4];
 	Vector2 matrix3[4];
-	
+	bool dvigat = true;
 	int condition;
 };
 class TBlock : public Tetramino {
@@ -104,7 +110,7 @@ public:
 class QuadroBlock : public Tetramino {
 public:
 	QuadroBlock() {
-		matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 0 + 10, 1 };matrix[3] = { 1 + 10, 1 };//0-точка вращения //		
+		matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 0 + 10, 1 };matrix[3] = { 1 + 10, 1 };
 		color = YELLOW;
 	}
 
@@ -113,12 +119,167 @@ public:
 
 	}
 };
+class LongBlock : public Tetramino {
+public:
+
+	LongBlock() {
+		matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 2 + 10, 0 };matrix[3] = { 3 + 10, 0 };
+		matrix0[0] = { 0, 0 }; matrix0[1] = { 1, 0 }; matrix0[2] = { 2, 0 }; matrix0[3] = { 3, 0 };
+		matrix1[0] = { 1, 0 }; matrix1[1] = { 1,1 }; matrix1[2] = { 1,2 }; matrix1[3] = { 1, 3 };
+		condition = 0;
+		color = GREEN;
+	}
+
+	void Rotate(bool flag) {//flag == true по часовой
+		condition = (condition == 0 ? 1 : 0);
+		if (!condition) {
+			Equal_matrix(matrix, matrix0);
+		}
+		else {
+			Equal_matrix(matrix, matrix1);
+		}
+		for (int i = 0; i < 4; i++) {
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(x1, x_perem));
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(y1, y_perem));
+		}
+
+	}
+
+};
+class GBlockRight : public Tetramino {
+public:
+
+	GBlockRight() {
+		matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 0 + 10, 1};matrix[3] = { 0+ 10, 2};
+		matrix0[0] = { 0, 0 }; matrix0[1] = { 1, 0 }; matrix0[2] = { 0,1 }; matrix0[3] = { 0,2 };
+		matrix1[0] = { 0, 0 }; matrix1[1] = { 1, 0 }; matrix1[2] = { 2, 0 }; matrix1[3] = { 2,1 };
+		matrix2[0] = { 2, 0 }; matrix2[1] = { 2, 1 }; matrix2[2] = {2,2 }; matrix2[3] = { 1, 2 };
+		matrix3[0] = { 0,1 }; matrix3[1] = { 0,2 }; matrix3[2] = { 1,2 }; matrix3[3] = { 2,2};
+		condition = 0;
+		color = GREEN;
+	}
+
+	void Rotate(bool flag) {//flag == true по часовой
+		if (flag) {
+			condition = (condition + 1 < 4 ? condition + 1 : 0);
+		}
+		else {
+			condition = (condition - 1 >= 0 ? condition - 1 : 3);
+		}
+		switch (condition) {
+		case 0: Equal_matrix(matrix, matrix0);  break;
+		case 1: Equal_matrix(matrix, matrix1); break;
+		case 2: Equal_matrix(matrix, matrix2); break;
+		case 3: Equal_matrix(matrix, matrix3); break;
+		}
+		for (int i = 0; i < 4; i++) {
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(x1, x_perem));
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(y1, y_perem));
+		}
+
+	}
+
+};
+class GBlockLeft : public Tetramino {
+public:
+
+	GBlockLeft() {
+		matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 1 + 10, 1 };matrix[3] = { 1 + 10, 2 };
+		matrix0[0] = { 0, 0 }; matrix0[1] = { 1, 0 }; matrix0[2] = { 1,1 }; matrix0[3] = { 1,2 };
+		matrix1[0] = { 0, 1}; matrix1[1] = { 1, 1 }; matrix1[2] = { 2, 1 }; matrix1[3] = { 2,0 };
+		matrix2[0] = { 0, 0 }; matrix2[1] = { 0, 1 }; matrix2[2] = { 0,2 }; matrix2[3] = { 1, 2 };
+		matrix3[0] = { 0,1 }; matrix3[1] = { 0,0 }; matrix3[2] = { 1,0 }; matrix3[3] = { 2,0};
+		condition = 0;
+		color = GREEN;
+	}
+
+	void Rotate(bool flag) {//flag == true по часовой
+		if (flag) {
+			condition = (condition + 1 < 4 ? condition + 1 : 0);
+		}
+		else {
+			condition = (condition - 1 >= 0 ? condition - 1 : 3);
+		}
+		switch (condition) {
+		case 0: Equal_matrix(matrix, matrix0);  break;
+		case 1: Equal_matrix(matrix, matrix1); break;
+		case 2: Equal_matrix(matrix, matrix2); break;
+		case 3: Equal_matrix(matrix, matrix3); break;
+		}
+		for (int i = 0; i < 4; i++) {
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(x1, x_perem));
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(y1, y_perem));
+		}
+
+	}
+
+};
+class ZBlockRight: public Tetramino {
+public:
+
+	ZBlockRight() {
+		matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 1 + 10, 1 };matrix[3] = { 2 + 10, 1 };
+		matrix0[0] = { 0, 0 }; matrix0[1] = { 1, 0 }; matrix0[2] = { 1,1 }; matrix0[3] = { 2,1 };
+		matrix1[0] = { 1, 1 }; matrix1[1] = { 2, 1 }; matrix1[2] = { 1,2}; matrix1[3] = { 2,0 };
+		
+		condition = 0;
+		color = GREEN;
+	}
+
+	void Rotate(bool flag) {//flag == true по часовой
+		condition = (condition == 0 ? 1 : 0);
+		if (!condition) {
+			Equal_matrix(matrix, matrix0);
+		}
+		else {
+			Equal_matrix(matrix, matrix1);
+		}
+		for (int i = 0; i < 4; i++) {
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(x1, x_perem));
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(y1, y_perem));
+		}
+
+	}
+};
+class ZBlockLeft : public Tetramino {
+public:
+
+	ZBlockLeft() {
+		matrix[0] = { 0 + 10,1 };matrix[1] = { 1 + 10,0 };matrix[2] = { 1 + 10, 1 };matrix[3] = { 2 + 10, 0};
+		matrix0[0] = { 0, 1}; matrix0[1] = { 1, 0 }; matrix0[2] = { 1,1 }; matrix0[3] = { 2,0 };
+		matrix1[0] = { 1, 0 }; matrix1[1] = { 1, 1 }; matrix1[2] = { 2, 1 }; matrix1[3] = { 2,2 };
+
+		condition = 0;
+		color = GREEN;
+	}
+
+	void Rotate(bool flag) {//flag == true по часовой
+		condition = (condition == 0 ? 1 : 0);
+		if (!condition) {
+			Equal_matrix(matrix, matrix0);
+		}
+		else {
+			Equal_matrix(matrix, matrix1);
+		}
+		for (int i = 0; i < 4; i++) {
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(x1, x_perem));
+			matrix[i] = Vector2Add(matrix[i], Vector2Scale(y1, y_perem));
+		}
+
+	}
+
+};
 int main() {
 	SetTraceLogLevel(LOG_NONE);
 	InitWindow(800, 600, "Tetris");
 	SetTargetFPS(60);
-	QuadroBlock a;
+	//LongBlock a;
+	//QuadroBlock a;
 	//TBlock a;
+	//GBlockRight a;
+	//GBlockLeft a;
+	ZBlockLeft a;
+	//ZBlockRight a;
 	while (!WindowShouldClose()) {
 		BeginDrawing();
 		a.Draw();
