@@ -25,45 +25,25 @@ class Tetramino {
 
 
 public:
-	Tetramino() {
-		
-	}
-	void is_fall(int* border) {
-		int x1 = matrix[0].x, x2 = matrix[1].x, x3 = matrix[2].x, x4 = matrix[3].x;
-		int y1 = matrix[0].y, y2 = matrix[1].y, y3 = matrix[3].y, y4 = matrix[3].y;
-		int max_y = max(y1, y2), b = max(y3, y4);
-		max_y = max(max_y, b); //Максимальное значение по y самое низкое
-		int min_y = min(y1, y2); b = min(y3, y4);
-		min_y = min(min_y, b); //Самое высокое
-		if (max_y == 19) {
-			cout << 1 << endl;
-			fall = true;
-			
-			
-		}
-		else if (border[x1] == max_y+1 ) {
 
-			cout << 1 << " " << border[x1] << endl;
-			fall = true;
-		}
-		else if (border[x2] == max_y +1) {
-			cout << 2 << " " << border[x2] << endl;
-			fall = true;
-		}
-		else if (border[x3] == max_y + 1) {
-			cout << 3 << " " << border[x3] << endl;
-			fall = true;
-		}
-		else if (border[x4] == max_y + 1) {
-			cout << 4 << " " << border[x4] << endl;
-			fall = true;
-		} 
-		if (fall) {
-			border[x1] = min(border[x1], y1);
-			border[x2] = min(border[x2], y2);
-			border[x3] = min(border[x3], y3);
-			border[x4] = min(border[x4], y4);
-		}
+	void is_fall(int *border) {
+		//int x1 = matrix[0].x, x2 = matrix[1].x, x3 = matrix[2].x, x4 = matrix[3].x;
+		//int y1 = matrix[0].y, y2 = matrix[1].y, y3 = matrix[2].y, y4 = matrix[3].y;
+		//cout << x1 << x2 << x3 << x4 << endl;
+		//cout << y1 << y2 << y3 << y4 << endl;
+		//if (y1 == 19 || y2 == 19 || y3 == 19 || y4 == 19) {
+		//	fall = true;
+		//}
+		///*else if (border[x1][y1 + 1] == 1 || border[x2][y2 + 1] == 1 || border[x3][y3 + 1] == 1 || border[x4][y4 + 1] == 1) {
+		//	fall = true;
+		//}*/
+		///*if (fall) {
+		//	border[x1][y1] = 1;
+		//	border[x2][y2] = 1;
+		//	border[x3][y3] = 1;
+		//	border[x4][y4] = 1;
+		//	
+		//}*/
 
 	}
 	void Update() {
@@ -88,13 +68,28 @@ public:
 
 	}
 	void Move(bool flag) { //flag == true вправо иначе влево
+		bool _flag = true;
+	
 		if (!fall) {
 			for (int i = 0; i < 4; i++) {
-				matrix[i] = (flag ? (Vector2Add(matrix[i], x1)) : Vector2Add(matrix[i], Vector2Scale(x1, -1)));
+				
+					if (matrix[i].x == 0 || matrix[i].x == 16) {
+						_flag = false;
+						
+						break;
+					}
 
 			}
-			if (flag) { x_perem += 1; }
-			else { x_perem -= 1; }
+			if (_flag) {
+				for (int i = 0; i < 4; i++) {
+
+					matrix[i] = (flag ? (Vector2Add(matrix[i], x1)) : Vector2Add(matrix[i], Vector2Scale(x1, -1)));
+
+				}
+
+				if (flag) { x_perem += 1; }
+				else { x_perem -= 1; }
+			}
 		}
 	}
 	void Rotate(bool flag) {//flag == true по часовой
@@ -118,6 +113,27 @@ public:
 		}
 
 	}
+	void KickstartMyHeart() {
+		y_perem = 0; x_perem = 10;
+		fall = false;
+		condition = 0;
+		switch (type) {
+		case 0:
+			matrix[0] = { 1 + 10,1 };matrix[1] = { 1 + 10,0 };matrix[2] = { 2 + 10, 0 };matrix[3] = { 0 + 10, 0 }; break;
+		case 1:
+			matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 0 + 10, 1 };matrix[3] = { 1 + 10, 1 }; break;
+		case 2:
+			matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 2 + 10, 0 };matrix[3] = { 3 + 10, 0 }; break;
+		case 3:
+			matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 0 + 10, 1 };matrix[3] = { 0 + 10, 2 }; break;
+		case 4:
+			matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 1 + 10, 1 };matrix[3] = { 1 + 10, 2 }; break;
+		case 5:
+			matrix[0] = { 0 + 10,0 };matrix[1] = { 1 + 10,0 };matrix[2] = { 1 + 10, 1 };matrix[3] = { 2 + 10, 1 }; break;
+		case 6:
+			matrix[0] = { 0 + 10,1 };matrix[1] = { 1 + 10,0 };matrix[2] = { 1 + 10, 1 };matrix[3] = { 2 + 10, 0 }; break;
+		}
+	}
 	Vector2 y1 = { 0,1 };
 	Vector2 e = { 1, 1 };
 	Vector2 x1 = { 1, 0 };
@@ -129,21 +145,21 @@ public:
 	Vector2 matrix1[4];
 	Vector2 matrix2[4];
 	Vector2 matrix3[4];
-	
+	int condition = 0;
 	bool fall = false;
-	int condition;
+	int type;
 };
 class TBlock : public Tetramino {
 public:
 
 	TBlock(){
-		matrix[0] = { 1+10,1 };matrix[1] = {1+10,0 };matrix[2] = { 2+10, 0};matrix[3] = { 0+10, 0};//0-точка вращения //		
+		matrix[0] = { 1+10,1 };matrix[1] = {1+10,0 };matrix[2] = { 2+10, 0};matrix[3] = { 0+10, 0};		
 		matrix0[0] = { 1,1 }; matrix0[1] = { 0, 0 }; matrix0[2] = { 1, 0 }; matrix0[0] = { 2, 0 };
 		matrix1[0] = { 1, 1 }; matrix1[1] = { 2, 0 }; matrix1[2] = { 2, 1 }; matrix1[3] = { 2,2 };
 		matrix2[0] = { 1, 1 }; matrix2[1] = { 2, 2 }; matrix2[2] = { 1,2 }; matrix2[3] = { 0, 2 };
 		matrix3[0] = { 1,1 }; matrix3[1] = { 0,2 }; matrix3[2] = { 0,1 }; matrix3[3] = { 0,0 };
-		condition = 0;
-		color = GREEN;
+		type = 0;
+		color = ORANGE;
 	}
 	
 
@@ -156,6 +172,7 @@ public:
 		matrix0[0] = { 0, 0 }; matrix0[1] = { 1, 0 }; matrix0[2] = { 0,1 }; matrix0[3] = { 1, 1 };
 		Equal_matrix(matrix1, matrix0); Equal_matrix(matrix2, matrix0); Equal_matrix(matrix3, matrix0);
 		color = YELLOW;
+		type = 1;
 	}
 };
 class LongBlock : public Tetramino {
@@ -166,8 +183,8 @@ public:
 		matrix0[0] = { 0, 0 }; matrix0[1] = { 1, 0 }; matrix0[2] = { 2, 0 }; matrix0[3] = { 3, 0 };
 		matrix1[0] = { 1, 0 }; matrix1[1] = { 1,1 }; matrix1[2] = { 1,2 }; matrix1[3] = { 1, 3 };
 		Equal_matrix(matrix2, matrix0); Equal_matrix(matrix3, matrix1);
-		condition = 0;
-		color = GREEN;
+		type = 2;
+		color = LIME;
 	}
 
 };
@@ -180,8 +197,8 @@ public:
 		matrix1[0] = { 0, 0 }; matrix1[1] = { 1, 0 }; matrix1[2] = { 2, 0 }; matrix1[3] = { 2,1 };
 		matrix2[0] = { 2, 0 }; matrix2[1] = { 2, 1 }; matrix2[2] = {2,2 }; matrix2[3] = { 1, 2 };
 		matrix3[0] = { 0,1 }; matrix3[1] = { 0,2 }; matrix3[2] = { 1,2 }; matrix3[3] = { 2,2};
-		condition = 0;
-		color = GREEN;
+		type = 3;
+		color = PURPLE;
 	}
 
 };
@@ -194,8 +211,8 @@ public:
 		matrix1[0] = { 0, 1}; matrix1[1] = { 1, 1 }; matrix1[2] = { 2, 1 }; matrix1[3] = { 2,0 };
 		matrix2[0] = { 0, 0 }; matrix2[1] = { 0, 1 }; matrix2[2] = { 0,2 }; matrix2[3] = { 1, 2 };
 		matrix3[0] = { 0,1 }; matrix3[1] = { 0,0 }; matrix3[2] = { 1,0 }; matrix3[3] = { 2,0};
-		condition = 0;
-		color = GREEN;
+		type = 4;
+		color = PINK;
 	}
 
 };
@@ -207,8 +224,8 @@ public:
 		matrix0[0] = { 0, 0 }; matrix0[1] = { 1, 0 }; matrix0[2] = { 1,1 }; matrix0[3] = { 2,1 };
 		matrix1[0] = { 1, 1 }; matrix1[1] = { 2, 1 }; matrix1[2] = { 1,2}; matrix1[3] = { 2,0 };
 		Equal_matrix(matrix2, matrix0); Equal_matrix(matrix3, matrix1);
-		condition = 0;
-		color = GREEN;
+		type = 5;
+		color = WHITE;
 	}
 };
 class ZBlockLeft : public Tetramino {
@@ -219,7 +236,7 @@ public:
 		matrix0[0] = { 0, 1}; matrix0[1] = { 1, 0 }; matrix0[2] = { 1,1 }; matrix0[3] = { 2,0 };
 		matrix1[0] = { 1, 0 }; matrix1[1] = { 1, 1 }; matrix1[2] = { 2, 1 }; matrix1[3] = { 2,2 };
 		Equal_matrix(matrix2, matrix0); Equal_matrix(matrix3, matrix1);
-		condition = 0;
+		type = 6;
 		color = GREEN;
 	}
 };
@@ -233,7 +250,7 @@ public:
 	}
 	void Draw() {
 		for (int i = 0; i < svobodn; i++) {
-			DrawRectangle(play_matrix[i].x * cellSize, play_matrix[i].y * cellSize, cellSize, cellSize, _Color);
+			DrawRectangle(play_matrix[i].x * cellSize, play_matrix[i].y * cellSize, cellSize, cellSize, _Color[i/4]);
 		}
 	}
 	void Otpechatok(Tetramino obj) {
@@ -241,18 +258,30 @@ public:
 			play_matrix[i + svobodn].x = obj.matrix[i].x;
 			play_matrix[i + svobodn].y  = obj.matrix[i].y;
 		}
+		_Color[svobodn/4] = obj.color;
 		svobodn += 4;
 	}
-	int x_len = 22;
-	int y_len = 32;
-	int svobodn = 0; //Количество свободных ячеек
-	Vector2 play_matrix[32*22];
+	/*void is_streak(int(*border)[20]) {
+		int stroka[20] = {};
+		for (int i = 0; i < svobodn; i++) {
+			int a = play_matrix[i].y;
+			stroka[a] += 1;
+		}
+		if (stroka[19] == 17) {
+			cout << 1;
+		}
 
-	Color _Color = RED;
+	}*/
+	int x_len = 20;
+	int y_len = 17;
+	int svobodn = 0; //Количество свободных ячеек
+	Vector2 play_matrix[20*17];
+
+	Color _Color[100];
 };
 int main() {
-	SetTraceLogLevel(LOG_NONE);
-	InitWindow(600, 600, "Tetris");
+	SetTraceLogLevel(LOG_NONE);//y - 20 x - 17
+	InitWindow(800, 700, "Tetris");
 	SetTargetFPS(60);
 	QuadroBlock QuadroBlock;
 	LongBlock LongBlock;
@@ -263,9 +292,14 @@ int main() {
 	TBlock TBlock;
 	Tetramino Blocks[7] = { QuadroBlock, LongBlock, GBlockRight, GBlockLeft, ZBlockRight, ZBlockLeft, TBlock};
 	playground playground;
-	int border[22];
-	for (int i = 0; i < 22; i++) {
-		border[i] = 100;
+	int** border = new int* [17];
+	for (int i = 0; i <17; i++) {
+		border[i] = new int[20];
+	}
+	for (int i = 0; i < 17; i++) {
+		for (int j = 0; j < 20; j++) {
+			border[i][j] = 0;
+		}
 	}
 	int i = 0;
 	while (!WindowShouldClose()) {
@@ -273,13 +307,13 @@ int main() {
 		BeginDrawing();
 		
 		ClearBackground(BLUE);
-		
+		DrawRectangle(0, 0, 510, 600, BLACK);
 		playground.Draw();
 			Blocks[i].Draw();
 		
-			if (updTriggered(0.15)) {
+			if (updTriggered(0.2)) {
 				Blocks[i].Update();
-				Blocks[i].is_fall(border);
+				Blocks[i].is_fall(border[0]);
 				if (IsKeyDown(KEY_D)) {
 					Blocks[i].Move(true);
 				}
@@ -294,18 +328,21 @@ int main() {
 				Blocks[i].Rotate(false);
 			}
 			if (Blocks[i].fall) {
-				Blocks[i].y_perem = 0;
 			
 				playground.Otpechatok(Blocks[i]);
+				Blocks[i].KickstartMyHeart();
 				if (i > 5) { i = 0; }
 				else { i += 1; }
 			}
 		
 		
 
-
+			
 
 		EndDrawing();
 	}
-
+	for (int i = 0; i < 17; i++) {
+		delete[] border[i];
+	}
+	delete[] border;
 }
