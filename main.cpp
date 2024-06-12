@@ -66,13 +66,13 @@ public:
 		}
 
 	}
-	void Move(bool flag) { //flag == true вправо иначе влево
+	void Move(bool flag, int(*border)[20]) { //flag == true вправо иначе влево
 		bool _flag = true;
 	
 		if (!fall) {
 			for (int i = 0; i < 4; i++) {
-				
-					if (matrix[i].x == 0 || matrix[i].x == 16) {
+				int x = matrix[i].x, y = matrix[i].y;
+					if ((x == 0 && !flag) || (x == 16 && flag)|| (flag && border[x+1][y] == 1) || (!flag && border[x-1][y] == 1)) {
 						_flag = false;
 						
 						break;
@@ -91,7 +91,20 @@ public:
 			}
 		}
 	}
-	void Rotate(bool flag) {//flag == true по часовой
+	bool Right_Rotate_Check(Vector2 _matrix[4], int(*border)[20]) {
+		int x = 0, y = 0;
+		for (int i = 0; i < 4; i++) {
+			x = 0, y = 0;
+			x += x_perem + _matrix[i].x;
+			y += y_perem + _matrix[i].y;
+			if (x >= 17 || y >= 19 ||  border[x][y+1] == 1) {
+				return false;
+			}
+		}
+		return true;
+	}
+	void Rotate(bool flag, int(*border)[20]) {//flag == true по часовой
+		bool _flag = true;
 		if (!fall) {
 			if (flag) {
 				condition = (condition + 1 < 4 ? condition + 1 : 0);
@@ -100,14 +113,27 @@ public:
 				condition = (condition - 1 >= 0 ? condition - 1 : 3);
 			}
 			switch (condition) {
-			case 0: Equal_matrix(matrix, matrix0);  break;
-			case 1: Equal_matrix(matrix, matrix1); break;
-			case 2: Equal_matrix(matrix, matrix2); break;
-			case 3: Equal_matrix(matrix, matrix3); break;
+			case 0: if (Right_Rotate_Check(matrix0, border)){
+				Equal_matrix(matrix, matrix0);
+			} else { _flag = false; }  break;
+			case 1:if (Right_Rotate_Check(matrix1, border)) {
+				Equal_matrix(matrix, matrix1);
 			}
-			for (int i = 0; i < 4; i++) {
-				matrix[i] = Vector2Add(matrix[i], Vector2Scale(x1, x_perem));
-				matrix[i] = Vector2Add(matrix[i], Vector2Scale(y1, y_perem));
+				  else { _flag = false; }  break;
+			case 2:if (Right_Rotate_Check(matrix2, border)) {
+				Equal_matrix(matrix, matrix2);
+			}
+				  else { _flag = false; }  break;
+			case 3:if (Right_Rotate_Check(matrix3, border)) {
+				Equal_matrix(matrix, matrix3);
+			}
+				  else { _flag = false; }  break;
+			}
+			if (_flag) {
+				for (int i = 0; i < 4; i++) {
+					matrix[i] = Vector2Add(matrix[i], Vector2Scale(x1, x_perem));
+					matrix[i] = Vector2Add(matrix[i], Vector2Scale(y1, y_perem));
+				}
 			}
 		}
 
@@ -153,7 +179,7 @@ public:
 
 	TBlock(){
 		matrix[0] = { 1+10,1 };matrix[1] = {1+10,0 };matrix[2] = { 2+10, 0};matrix[3] = { 0+10, 0};		
-		matrix0[0] = { 1,1 }; matrix0[1] = { 0, 0 }; matrix0[2] = { 1, 0 }; matrix0[0] = { 2, 0 };
+		matrix0[0] = { 1,1 }; matrix0[1] = { 0, 0 }; matrix0[2] = { 1, 0 }; matrix0[3] = { 2, 0 };
 		matrix1[0] = { 1, 1 }; matrix1[1] = { 2, 0 }; matrix1[2] = { 2, 1 }; matrix1[3] = { 2,2 };
 		matrix2[0] = { 1, 1 }; matrix2[1] = { 2, 2 }; matrix2[2] = { 1,2 }; matrix2[3] = { 0, 2 };
 		matrix3[0] = { 1,1 }; matrix3[1] = { 0,2 }; matrix3[2] = { 0,1 }; matrix3[3] = { 0,0 };
@@ -249,6 +275,7 @@ public:
 	}
 	void Draw() {
 		for (int i = 0; i < svobodn; i++) {
+			
 			DrawRectangle(play_matrix[i].x * cellSize, play_matrix[i].y * cellSize, cellSize, cellSize, Colors[play_matrix_color[i]]);
 		}
 	}
@@ -262,14 +289,41 @@ public:
 		svobodn += 4;
 	}
 	void is_streak(int(*border)[20]) {
-		int stroka[200] = {};
+		int stroka[20] = {};
 		for (int i = 0; i < svobodn; i++) {
 			int a = play_matrix[i].y;
 			stroka[a] += 1;
 		}
-		if (stroka[19] == 17) {
-			//работает
+		for (int i = 0; i < 20; i++) {
+			if (stroka[i] == 17) {
+				int k = i;
+				cout << 1;
+				for (int j = 0; j < svobodn; j++) {
+					if (play_matrix[j].y == i) {
+						
+						play_matrix[j].x = -1;
+						play_matrix[j].y = -1;
+					}
+				}
+				Vector2 buf;
+				for (int i = 0; i < svobodn; i++) {
+					if (play_matrix[i].y == -1) {
+						for (int j = i; j<svobodn; j++) {
+							buf = play_matrix[i];
+							play_matrix[i] = play_matrix[i + 1];
+							play_matrix[i + 1] = buf;
+						}
+					}
+				}
+				svobodn -= 17;
+				for (int i = 0; i < svobodn; i++) {
+					if (play_matrix[i].y >= k) {
+						play_matrix[i].y -= 1;
+					}
+				}
+			}
 		}
+
 
 	}
 	int x_len = 20;
@@ -283,14 +337,14 @@ int main() {
 	SetTraceLogLevel(LOG_NONE);//y - 20 x - 17
 	InitWindow(800, 700, "Tetris");
 	SetTargetFPS(60);
-	QuadroBlock QuadroBlock;
+	/*QuadroBlock QuadroBlock;
 	LongBlock LongBlock;
 	GBlockRight GBlockRight;
 	GBlockLeft GBlockLeft;
 	ZBlockRight ZBlockRight;
 	ZBlockLeft ZBlockLeft;
-	TBlock TBlock;
-	Tetramino Blocks[7] = { QuadroBlock, LongBlock, GBlockRight, GBlockLeft, ZBlockRight, ZBlockLeft, TBlock};
+	TBlock TBlock;*/
+	Tetramino Blocks[7] = { TBlock(), QuadroBlock(), LongBlock(), GBlockRight(), GBlockLeft(), ZBlockRight(), ZBlockLeft()};
 	playground playground;
 	int border[17][20];
 	for (int i = 0; i < 17; i++) {
@@ -305,25 +359,30 @@ int main() {
 		
 		ClearBackground(BLUE);
 		DrawRectangle(0, 0, 510, 600, BLACK);
+		
 		playground.Draw();
 			Blocks[i].Draw();
 		
 			if (updTriggered(0.2)) {
+
 				Blocks[i].Update();
-				Blocks[i].is_fall(border);
 				if (IsKeyDown(KEY_D)) {
-					Blocks[i].Move(true);
+					Blocks[i].Move(true, border);
 				}
 				else if (IsKeyDown(KEY_A)) {
-					Blocks[i].Move(false);
+					Blocks[i].Move(false, border);
 				}
+				Blocks[i].is_fall(border);
 			}
-			if (IsKeyPressed(KEY_RIGHT)) {
-				Blocks[i].Rotate(true);
-			}
-			else if (IsKeyPressed(KEY_LEFT)) {
-				Blocks[i].Rotate(false);
-			}
+	
+
+				if (IsKeyPressed(KEY_RIGHT)) {
+					Blocks[i].Rotate(true, border);
+				}
+				else if (IsKeyPressed(KEY_LEFT)) {
+					Blocks[i].Rotate(false, border);
+				}
+			
 			if (Blocks[i].fall) {
 			
 				playground.Otpechatok(Blocks[i]);
