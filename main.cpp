@@ -269,21 +269,21 @@ class playground {
 public:
 	playground() {
 		for (int i = 0; i < y_len*x_len; i++) {
-			play_matrix[i] = { 0, 0 };
+			play_matrix[i] = { 0, 0, 0};
 		}
 		
 	}
-	void Draw() {
+	void Draw( ){
 		for (int i = 0; i < svobodn; i++) {
-			
-			DrawRectangle(play_matrix[i].x * cellSize, play_matrix[i].y * cellSize, cellSize, cellSize, Colors[play_matrix_color[i]]);
+			int tsvet = play_matrix[i].z;
+			DrawRectangle(play_matrix[i].x * cellSize, play_matrix[i].y * cellSize, cellSize, cellSize, Colors[tsvet]);
 		}
 	}
 	void Otpechatok(Tetramino obj) {
 		for (int i = 0; i<4; i++) {
 			play_matrix[i + svobodn].x = obj.matrix[i].x;
 			play_matrix[i + svobodn].y  = obj.matrix[i].y;
-			play_matrix_color[i + svobodn] = obj.type;
+			play_matrix[i + svobodn].z = obj.type;
 		}
 		
 		svobodn += 4;
@@ -297,31 +297,52 @@ public:
 		for (int i = 0; i < 20; i++) {
 			if (stroka[i] == 17) {
 				int k = i;
-				cout << 1;
 				for (int j = 0; j < svobodn; j++) {
-					if (play_matrix[j].y == i) {
+					if (play_matrix[j].y == k) {
 						
 						play_matrix[j].x = -1;
 						play_matrix[j].y = -1;
 					}
 				}
-				Vector2 buf;
-				for (int i = 0; i < svobodn; i++) {
-					if (play_matrix[i].y == -1) {
-						for (int j = i; j<svobodn; j++) {
-							buf = play_matrix[i];
-							play_matrix[i] = play_matrix[i + 1];
-							play_matrix[i + 1] = buf;
-						}
+				for (int i = 0; i < 17; i++) {
+					for (int j = 0; j < 20; j++) {
+						border[i][j] = 0;
 					}
+				}
+				Vector3 buf[20 * 17];
+				for (int i = 0; i < svobodn; i++) {
+					cout << play_matrix[i].y;
+				}
+				cout << endl;
+				int minus1 = 0;
+				for (int i = 0; i < svobodn; i++) {
+					if (play_matrix[i].y != -1) {
+						buf[i - minus1].x = play_matrix[i].x;
+						buf[i - minus1].y = play_matrix[i].y;
+						buf[i - minus1].z = play_matrix[i].z;
+					}
+					else {
+						minus1 += 1;
+					}
+				}
+				for (int i = 0; i < svobodn-17; i++) {
+					play_matrix[i].x = buf[i].x; play_matrix[i].y = buf[i].y; play_matrix[i].z = buf[i].z;
 				}
 				svobodn -= 17;
 				for (int i = 0; i < svobodn; i++) {
-					if (play_matrix[i].y >= k) {
-						play_matrix[i].y -= 1;
+					
+					if (play_matrix[i].y <= k) {
+						play_matrix[i].y += 1;
+						
+						
 					}
 				}
+
 			}
+		}
+		for (int i = 0; i < svobodn; i++) {
+			int x = play_matrix[i].x, y = play_matrix[i].y;
+			border[x][y] = 1;
 		}
 
 
@@ -329,7 +350,7 @@ public:
 	int x_len = 20;
 	int y_len = 17;
 	int svobodn = 0; //Количество свободных ячеек
-	Vector2 play_matrix[20*17];
+	Vector3 play_matrix[20*17];
 	int play_matrix_color[20 * 17];
 	
 };
@@ -337,13 +358,7 @@ int main() {
 	SetTraceLogLevel(LOG_NONE);//y - 20 x - 17
 	InitWindow(800, 700, "Tetris");
 	SetTargetFPS(60);
-	/*QuadroBlock QuadroBlock;
-	LongBlock LongBlock;
-	GBlockRight GBlockRight;
-	GBlockLeft GBlockLeft;
-	ZBlockRight ZBlockRight;
-	ZBlockLeft ZBlockLeft;
-	TBlock TBlock;*/
+	
 	Tetramino Blocks[7] = { TBlock(), QuadroBlock(), LongBlock(), GBlockRight(), GBlockLeft(), ZBlockRight(), ZBlockLeft()};
 	playground playground;
 	int border[17][20];
