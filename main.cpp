@@ -1,8 +1,10 @@
 #include "raylib.h"
 #include <iostream>
+#include <string>
 #include "rlgl.h"
 #include <deque>
 #include <raymath.h>
+#pragma warning(disable : 4996)
 Color Colors[7] = { ORANGE, YELLOW, LIME, PURPLE, PINK, WHITE, GREEN };
 int cellSize = 30;
 int cellCount = 25;
@@ -64,7 +66,13 @@ public:
 
 			DrawRectangle(x * cellSize, y * cellSize, cellSize, cellSize, color);
 		}
+	}
+	void Draw_next() {
+		for (int i = 0; i < 4; i++) {
+			int x = matrix[i].x; int y = matrix[i].y;
 
+			DrawRectangle(x * cellSize + 250, y * cellSize+200, cellSize, cellSize, color);
+		}
 	}
 	void Move(bool flag, int(*border)[20]) { //flag == true вправо иначе влево
 		bool _flag = true;
@@ -162,7 +170,7 @@ public:
 	Vector2 y1 = { 0,1 };
 	Vector2 e = { 1, 1 };
 	Vector2 x1 = { 1, 0 };
-	int x_perem = 10;
+	int x_perem = 8;
 	int y_perem = 0;
 	Vector2 matrix[4];
 	Vector2 matrix0[4];
@@ -283,7 +291,12 @@ public:
 		for (int i = 0; i<4; i++) {
 			play_matrix[i + svobodn].x = obj.matrix[i].x;
 			play_matrix[i + svobodn].y  = obj.matrix[i].y;
+			
+			if (obj.matrix[i].y <= 1) { game_over = true;  };
 			play_matrix[i + svobodn].z = obj.type;
+		}
+		if (!game_over) {
+			score += 1;
 		}
 		
 		svobodn += 4;
@@ -296,6 +309,7 @@ public:
 		}
 		for (int i = 0; i < 20; i++) {
 			if (stroka[i] == 17) {
+				score += 10;
 				int k = i;
 				for (int j = 0; j < svobodn; j++) {
 					if (play_matrix[j].y == k) {
@@ -310,10 +324,7 @@ public:
 					}
 				}
 				Vector3 buf[20 * 17];
-				for (int i = 0; i < svobodn; i++) {
-					cout << play_matrix[i].y;
-				}
-				cout << endl;
+				
 				int minus1 = 0;
 				for (int i = 0; i < svobodn; i++) {
 					if (play_matrix[i].y != -1) {
@@ -347,11 +358,12 @@ public:
 
 
 	}
+	int score = 0;
 	int x_len = 20;
 	int y_len = 17;
 	int svobodn = 0; //Количество свободных ячеек
 	Vector3 play_matrix[20*17];
-	int play_matrix_color[20 * 17];
+	bool game_over = false;
 	
 };
 int main() {
@@ -368,28 +380,71 @@ int main() {
 		}
 	}
 	int i = 0;
+	int next = 1;
+	float speed = 0.3;
+	char bombs[50]; strcpy(bombs, "SCORE ");
 	while (!WindowShouldClose()) {
 			
 		BeginDrawing();
 		
 		ClearBackground(BLUE);
 		DrawRectangle(0, 0, 510, 600, BLACK);
-		
-		playground.Draw();
-			Blocks[i].Draw();
-		
-			if (updTriggered(0.2)) {
-
-				Blocks[i].Update();
-				if (IsKeyDown(KEY_D)) {
-					Blocks[i].Move(true, border);
-				}
-				else if (IsKeyDown(KEY_A)) {
-					Blocks[i].Move(false, border);
-				}
-				Blocks[i].is_fall(border);
-			}
+		DrawText("NEXT BLOCK", 525, 150, 35, WHITE);
 	
+		if (playground.score >= 100) {
+			string s = to_string(playground.score);
+
+			bombs[6] = s[0]; bombs[7] = s[1]; bombs[8] = s[2]; bombs[9] = '\0';
+		}
+		else if (playground.score >= 10) {
+			string s = to_string(playground.score);
+
+			bombs[6] = s[0]; bombs[7] = s[1]; bombs[8] = '\0';
+		}
+		else {
+			bombs[6] = playground.score + '0'; bombs[7] = '\0';
+		}
+		DrawText(bombs, 525, 350, 35, WHITE);
+			playground.Draw();
+			if (playground.game_over) {
+			
+				Vector2 Cursor = GetMousePosition();
+				Rectangle rec;
+
+				rec.x = 300; rec.y = 175;
+				rec.width = 210;
+				
+
+				DrawText("AGAIN", 600, 500, 50, WHITE);
+				if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+
+					if ((Cursor.x >= 600) && (Cursor.x <= 700) && (Cursor.y >= 475) && (Cursor.y <= 550)) {
+						
+						for (int i = 0; i < 17; i++) {
+							for (int j = 0; j < 20; j++) {
+								border[i][j] = 0;
+							}
+						}
+						playground.svobodn = 0;
+						playground.game_over = false;
+					}
+				}
+			}
+			else {
+				Blocks[i].Draw();
+				Blocks[next].Draw_next();
+				if (updTriggered(speed)) {
+
+					Blocks[i].Update();
+					if (IsKeyDown(KEY_D)) {
+						Blocks[i].Move(true, border);
+					}
+					else if (IsKeyDown(KEY_A)) {
+						Blocks[i].Move(false, border);
+					}
+					Blocks[i].is_fall(border);
+				}
+
 
 				if (IsKeyPressed(KEY_RIGHT)) {
 					Blocks[i].Rotate(true, border);
@@ -397,19 +452,22 @@ int main() {
 				else if (IsKeyPressed(KEY_LEFT)) {
 					Blocks[i].Rotate(false, border);
 				}
-			
-			if (Blocks[i].fall) {
-			
-				playground.Otpechatok(Blocks[i]);
-				playground.is_streak(border);
-				Blocks[i].KickstartMyHeart();
-				if (i > 5) { i = 0; }
-				else { i += 1; }
-			}
-		
-		
 
-			
+				if (Blocks[i].fall) {
+
+					playground.Otpechatok(Blocks[i]);
+					playground.is_streak(border);
+					Blocks[i].KickstartMyHeart();
+					Blocks[next].KickstartMyHeart();
+					i = next;
+					while (next == i) {
+						next = rand() % 7;
+					}
+					speed = 0.3 - (playground.score % 10) / 100;
+					if (speed < 0.15) { speed = 0.15; }
+				}
+			}
+
 
 		EndDrawing();
 	}
